@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Đập Chuột Ôn Từ Vựng - Có Âm Thanh & Hình Ảnh</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            color: #f1c40f;
+            text-align: center;
+        }
+
+        .target-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 2px solid #f1c40f;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .target-box h2 {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+
+        .target-word {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-top: 5px;
+        }
+
+        .info-panel {
+            display: flex;
+            gap: 30px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 650px;
+            width: 100%;
+        }
+
+        .hole {
+            position: relative;
+            background: #3e2723;
+            height: 150px;
+            border-radius: 50% / 20%;
+            border-bottom: 8px solid #271c18;
+            overflow: hidden;
+            box-shadow: inset 0 15px 15px rgba(0,0,0,0.6);
+        }
+
+        .mole {
+            position: absolute;
+            bottom: -120%;
+            left: 10%;
+            width: 80%;
+            height: 130px;
+            background: #8d6e63;
+            border-radius: 60px 60px 0 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            transition: bottom 0.2s ease-out;
+            user-select: none;
+            box-shadow: 0 -5px 10px rgba(0,0,0,0.3);
+            border: 3px solid #5d4037;
+        }
+
+        /* Tạo hình khuôn mặt chú chuột cute */
+        .mole::before {
+            content: "🐹";
+            font-size: 2.2rem;
+            margin-bottom: 2px;
+        }
+
+        .mole.up {
+            bottom: 10px;
+        }
+
+        .mole.hit {
+            background: #e74c3c !important;
+            transform: scale(0.95);
+        }
+
+        .mole.hit::before {
+            content: "😵";
+        }
+
+        .mole-text {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+            line-height: 1.2;
+        }
+
+        .mole-ipa {
+            font-size: 0.75rem;
+            color: #ffe0b2;
+            margin-top: 2px;
+        }
+
+        .controls {
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🐹 Game Đập Chuột Ôn Từ Vựng 🏙️</h1>
+    
+    <div class="target-box">
+        <h2>HÃY ĐẬP CHUỘT CÓ TỪ MANG NGHĨA:</h2>
+        <div class="target-word" id="target-meaning">Nhấn "Bắt Đầu Chơi" để bắt đầu!</div>
+    </div>
+
+    <div class="info-panel">
+        <div>Điểm số: <span id="score">0</span></div>
+        <div>Thời gian: <span id="time-left">30</span>s</div>
+    </div>
+
+    <div class="grid">
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+        <div class="hole"><div class="mole" onclick="whack(this)"></div></div>
+    </div>
+
+    <div class="controls">
+        <button id="start-btn" onclick="startGame()">Bắt Đầu Chơi</button>
+    </div>
+
+    <script>
+        // Danh sách từ vựng trích xuất từ dữ liệu chủ đề thành phố[cite: 1]
+        const vocabList = [
+            { word: "bustling (adj)", ipa: "/ˈbʌslɪŋ/", meaning: "hối hả, nhộn nhịp, náo nhiệt" },
+            { word: "carry out", ipa: "/ˈkæri aʊt/", meaning: "tiến hành (nghiên cứu, nhiệm vụ)" },
+            { word: "come down with (v)", ipa: "/kʌm daʊn wɪð/", meaning: "bị ốm (vì bệnh gì)" },
+            { word: "concrete jungle (n)", ipa: "/ˌkɒŋkriːt ˈdʒʌŋɡl/", meaning: "rừng bê tông (nhiều nhà cao tầng)" },
+            { word: "congested (adj)", ipa: "/kənˈdʒestɪd/", meaning: "tắc nghẽn (giao thông)" },
+            { word: "construction site (n)", ipa: "/kənˈstrʌkʃn saɪt/", meaning: "công trường xây dựng" },
+            { word: "downtown (n)", ipa: "/ˌdaʊnˈtaʊn/", meaning: "khu phố chính / trung tâm" },
+            { word: "get around", ipa: "/ɡet əˈraʊnd/", meaning: "dạo quanh / đi lại" },
+            { word: "hang out with", ipa: "/hæŋ aʊt wɪð/", meaning: "đi chơi (cùng ai)" },
+            { word: "hygiene (n)", ipa: "/ˈhaɪdʒiːn/", meaning: "vệ sinh, vấn đề vệ sinh" },
+            { word: "itchy (adj)", ipa: "/ˈɪtʃi/", meaning: "ngứa, gây ngứa" },
+            { word: "leftover (n)", ipa: "/ˈleftəʊvə/", meaning: "thức ăn thừa" },
+            { word: "liveable (adj)", ipa: "/ˈlɪvəbl/", meaning: "đáng sống (nơi, địa điểm)" },
+            { word: "metro (n)", ipa: "/ˈmetrəʊ/", meaning: "hệ thống tàu điện ngầm" },
+            { word: "pricey (adj)", ipa: "/ˈpraɪsi/", meaning: "đắt đỏ" },
+            { word: "process (v)", ipa: "/ˈprəʊses/", meaning: "xử lý" },
+            { word: "public amenities", ipa: "/ˈpʌblɪk əˈmiːnətiz/", meaning: "những tiện ích công cộng" },
+            { word: "rush hour (n)", ipa: "/ˈrʌʃ aʊə/", meaning: "giờ cao điểm" },
+            { word: "sky train", ipa: "/skaɪ treɪn/", meaning: "tàu điện trên không" },
+            { word: "tram (n)", ipa: "/træm/", meaning: "xe điện" },
+            { word: "underground (n)", ipa: "/ˌʌndəˈɡraʊnd/", meaning: "hệ thống tàu điện ngầm" }
+        ];
+
+        // Khởi tạo Web Audio API để phát âm thanh lập trình trực tiếp
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                let now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    // Âm thanh vui tai khi đúng
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'wrong') {
+                    // Âm thanh trầm khi sai
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        const moles = document.querySelectorAll('.mole');
+        const scoreBoard = document.querySelector('#score');
+        const timeLeftBoard = document.querySelector('#time-left');
+        const targetMeaningEl = document.querySelector('#target-meaning');
+        const startBtn = document.querySelector('#start-btn');
+
+        let lastHole;
+        let timeUp = false;
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+        let currentTarget = null;
+
+        function randomTime(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        function randomHole(moles) {
+            const idx = Math.floor(Math.random() * moles.length);
+            const hole = moles[idx];
+            if (hole === lastHole) {
+                return randomHole(moles);
+            }
+            lastHole = hole;
+            return hole;
+        }
+
+        function setNewTarget() {
+            currentTarget = vocabList[Math.floor(Math.random() * vocabList.length)];
+            targetMeaningEl.textContent = currentTarget.meaning;
+        }
+
+        function popUp() {
+            if (timeUp) return;
+
+            const time = randomTime(1000, 1800);
+            const mole = randomHole(moles);
+
+            // Đảm bảo chuột chưa trồi lên ở hố này
+            if (mole.classList.contains('up')) {
+                setTimeout(popUp, 200);
+                return;
+            }
+
+            // 45% tỉ lệ xuất hiện từ đúng, còn lại là từ khác ngẫu nhiên để đánh lừa
+            let chosenVocab;
+            if (Math.random() < 0.45) {
+                chosenVocab = currentTarget;
+            } else {
+                chosenVocab = vocabList[Math.floor(Math.random() * vocabList.length)];
+            }
+
+            mole.dataset.word = chosenVocab.word;
+            mole.innerHTML = `
+                <div class="mole-text">${chosenVocab.word}</div>
+                <div class="mole-ipa">${chosenVocab.ipa}</div>
+            `;
+
+            mole.classList.remove('hit');
+            mole.classList.add('up');
+
+            let hideTimer = setTimeout(() => {
+                mole.classList.remove('up');
+                if (!timeUp) popUp();
+            }, time);
+
+            mole.dataset.hideTimer = hideTimer;
+        }
+
+        function startGame() {
+            initAudio();
+            score = 0;
+            timeLeft = 30;
+            timeUp = false;
+            scoreBoard.textContent = 0;
+            timeLeftBoard.textContent = timeLeft;
+            startBtn.disabled = true;
+
+            moles.forEach(m => m.classList.remove('up', 'hit'));
+
+            setNewTarget();
+            popUp();
+            // Cho phép xuất hiện thêm nhiều hố cùng lúc sau 1 giây
+            setTimeout(popUp, 600);
+            setTimeout(popUp, 1200);
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timeLeftBoard.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp = true;
+                    startBtn.disabled = false;
+                    moles.forEach(m => m.classList.remove('up'));
+                    alert(`🎉 Hết giờ! Tổng điểm của bạn là: ${score}`);
+                }
+            }, 1000);
+        }
+
+        function whack(mole) {
+            if (!mole.classList.contains('up') || timeUp) return;
+
+            const clickedWord = mole.dataset.word;
+
+            if (clickedWord === currentTarget.word) {
+                // Đập đúng
+                score += 10;
+                scoreBoard.textContent = score;
+                playSound('correct');
+                
+                mole.classList.add('hit');
+                clearTimeout(mole.dataset.hideTimer);
+                
+                setTimeout(() => {
+                    mole.classList.remove('up', 'hit');
+                }, 250);
+
+                setNewTarget(); // Đổi nghĩa mục tiêu mới ngay lập tức
+            } else {
+                // Đập sai
+                score = Math.max(0, score - 5);
+                scoreBoard.textContent = score;
+                playSound('wrong');
+                
+                mole.classList.add('hit');
+                setTimeout(() => {
+                    mole.classList.remove('hit');
+                }, 200);
+            }
+        }
+    </script>
+</body>
+</html>
